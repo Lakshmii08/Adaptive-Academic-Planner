@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adaptive Academic Planner — Lab CA</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0a0f1e;--bg2:#111827;--bg3:#1a2236;--bg4:#1e293b00;
+  --border:#1e3a6e;--border2:#2a4f8a;--border3:#3a6aaa;
+  --t1:#e2eafc;--t2:#8ba4cc;--t3:#4e6a99;
+  --blue:#3b82f6;--blue-d:#0c2461;--blue-l:#93c5fd;
+  --green:#34d399;--green-d:#064e3b;--green-l:#6ee7b7;
+  --amber:#fbbf24;--amber-d:#451a03;--amber-l:#fde68a;
+  --red:#f87171;--red-d:#3b0a0a;--red-l:#fca5a5;
+  --purple:#a78bfa;--purple-d:#1e0a4a;--purple-l:#d4c5fd;
+  --teal:#22d3ee;--teal-d:#0c2a35;
+  --font:'DM Sans',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --rad:12px;--rad-sm:8px;--rad-xs:6px;
+}
+
+body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── Header ── */
+.hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200}
+.hdr-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:var(--rad-xs);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hdr-title{font-size:15px;font-weight:600}
+.hdr-sub{font-size:11px;color:var(--t3);margin-top:1px}
+.nav{display:flex;gap:4px;margin-left:auto;background:var(--bg3);border-radius:var(--rad-sm);padding:4px}
+.nav-btn{padding:6px 14px;border-radius:var(--rad-xs);border:none;background:none;color:var(--t2);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.nav-btn.active{background:#0c2461;color:#93c5fd;border:1px solid #1e4db7}
+.nav-btn:hover:not(.active){color:var(--blue)}
+
+/* ── Layout ── */
+.main{max-width:1280px;margin:0 auto;padding:20px 24px 40px}
+.panel{display:none;animation:fadeIn .2s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* ── Cards ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rad);padding:18px 20px}
+.card-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:14px}
+.card-sm{padding:12px 14px}
+
+/* ── Form ── */
+label{font-size:11px;font-weight:500;color:var(--t2);display:block;margin-bottom:5px}
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;padding:8px 10px;font-size:13px;font-family:var(--font);
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--rad-xs);color:var(--t1);outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+textarea{resize:vertical;min-height:60px;line-height:1.5}
+.subj-row{display:grid;grid-template-columns:1fr 130px 70px 70px 68px 28px;gap:7px;align-items:center;margin-bottom:8px}
+
+/* ── Priority pills ── */
+.pri-pill{display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:100px;border:1px solid;white-space:nowrap}
+.pri-pill.high{background:var(--red-d);color:var(--red);border-color:#7f1d1d}
+.pri-pill.med{background:var(--amber-d);color:var(--amber);border-color:#78350f}
+.pri-pill.low{background:var(--green-d);color:var(--green);border-color:#065f46}
+
+/* ── Calendar ── */
+.cal-day{min-height:72px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rad-xs);padding:6px;cursor:default;transition:border-color .15s}
+.cal-day:hover{border-color:var(--border2)}
+.cal-day.today{border-color:var(--blue)}
+.cal-day.has-exam{background:var(--red-d);border-color:#7f1d1d}
+.cal-day.has-study{background:#1e0a4a;border-color:#5b21b6}
+.cal-day.has-holiday{background:var(--bg);opacity:.5}
+.cal-day-num{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:3px}
+.cal-day.today .cal-day-num{color:var(--blue)}
+.cal-ev{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+.cal-ev.exam{color:var(--red)}.cal-ev.study{color:var(--purple)}.cal-ev.holiday{color:var(--t3)}.cal-ev.other{color:var(--amber)}
+.cal-day-head{text-align:center;font-size:11px;font-weight:600;color:var(--t3);padding:4px 0 8px}
+.upcoming-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.upcoming-item:last-child{border-bottom:none}
+.upcoming-name{font-size:13px;font-weight:500;color:var(--t1)}
+.upcoming-date{font-size:11px;color:var(--t3)}
+
+/* ── Buttons ── */
+.btn{padding:8px 16px;border-radius:var(--rad-xs);border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#2563eb}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:var(--bg3);color:var(--t2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--t1)}
+.btn-danger{background:none;border:1px solid var(--border);color:var(--t3);border-radius:var(--rad-xs);padding:3px 7px;cursor:pointer;font-size:15px;transition:all .15s}
+.btn-danger:hover{border-color:var(--red);color:var(--red)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-amber{background:var(--amber-d);color:var(--amber);border:1px solid var(--amber)}
+.btn-green{background:var(--green-d);color:var(--green);border:1px solid var(--green)}
+
+/* ── Log ── */
+.log-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--rad-xs);padding:12px;font-family:var(--mono);font-size:11.5px;line-height:1.85;max-height:280px;overflow-y:auto;color:var(--t2)}
+.log-wrap::-webkit-scrollbar{width:4px}
+.log-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.lt{color:#60a5fa}.la{color:var(--green)}.lo{color:var(--amber)}.lf{color:var(--purple);font-weight:500}.ld{color:var(--red)}.lempty{color:var(--t3);font-style:italic}
+.log-legend{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+.log-legend span{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:5px}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+
+/* ── Metrics ── */
+.metric{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rad-sm);padding:14px;text-align:center}
+.metric-val{font-size:26px;font-weight:600;color:var(--t1);line-height:1;margin-bottom:3px}
+.metric-lbl{font-size:11px;color:var(--t3)}
+.metric-sub{font-size:11px;color:var(--t2);margin-top:2px}
+
+/* ── Schedule grid ── */
+.sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:14px}
+.day-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rad-sm);padding:9px 7px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.day-card:hover{border-color:var(--border3)}
+.day-card.urgent{border-color:var(--red);background:var(--red-d)}
+.day-card.moderate{border-color:var(--amber);background:var(--amber-d)}
+.day-card.holiday{opacity:.5;background:var(--bg);cursor:default}
+.day-card.completed{border-color:var(--green);background:var(--green-d)}
+.day-card.skipped{border-color:var(--red);opacity:.7}
+.day-n{font-size:10px;color:var(--t3);font-weight:500;margin-bottom:4px}
+.day-s{font-size:11px;font-weight:600;color:var(--t1);margin-bottom:3px;line-height:1.3}
+.day-h{font-size:10px;color:var(--t2)}
+.day-status{font-size:9px;font-weight:600;letter-spacing:.04em;margin-top:3px}
+.day-card.completed .day-status{color:var(--green)}
+.day-card.skipped .day-status{color:var(--red)}
+.day-card.urgent .day-status{color:var(--red)}
+
+/* ── Progress bars ── */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.prog-name{font-size:12px;color:var(--t2);width:150px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prog-track{flex:1;background:var(--bg);border-radius:100px;height:7px;overflow:hidden}
+.prog-fill{height:7px;border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.prog-info{font-size:11px;color:var(--t3);width:100px;text-align:right;flex-shrink:0}
+.prog-fill.pf-blue{background:var(--blue)}
+.prog-fill.pf-green{background:var(--green)}
+.prog-fill.pf-amber{background:var(--amber)}
+.prog-fill.pf-red{background:var(--red)}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:600;margin:2px}
+.badge-urgent{background:var(--red-d);color:var(--red);border:1px solid #7f1d1d}
+.badge-moderate{background:var(--amber-d);color:var(--amber);border:1px solid #78350f}
+.badge-safe{background:var(--green-d);color:var(--green);border:1px solid #065f46}
+.badge-info{background:var(--blue-d);color:var(--blue-l);border:1px solid #1e4db7}
+.badge-purple{background:var(--purple-d);color:var(--purple-l);border:1px solid #5b21b6}
+
+/* ── Adaptation event rows ── */
+.event-row{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rad-xs);padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.event-icon{width:28px;height:28px;border-radius:var(--rad-xs);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.event-icon.skip{background:var(--red-d);border:1px solid #7f1d1d}
+.event-icon.new-topic{background:var(--amber-d);border:1px solid #78350f}
+.event-icon.time-change{background:var(--blue-d);border:1px solid #1e4db7}
+.event-body{flex:1;min-width:0}
+.event-type{font-size:10px;font-weight:700;letter-spacing:.06em;margin-bottom:2px}
+.event-desc{font-size:12px;color:var(--t2)}
+.event-type.skip{color:var(--red)}.event-type.new-topic{color:var(--amber)}.event-type.time-change{color:var(--blue-l)}
+
+/* ── Catchup plan ── */
+.catchup-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rad-sm);padding:12px 14px;margin-bottom:8px;border-left:3px solid var(--amber)}
+.catchup-card.high{border-left-color:var(--red)}
+.catchup-card.new{border-left-color:var(--blue-l)}
+.catchup-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.catchup-title{font-size:13px;font-weight:600;color:var(--t1)}
+.catchup-meta{font-size:11px;color:var(--t3)}
+.catchup-topics{font-size:12px;color:var(--t2);margin-bottom:5px}
+.catchup-tip{font-size:11px;color:var(--teal);padding:4px 8px;background:var(--teal-d);border-radius:var(--rad-xs)}
+
+/* ── Chart ── */
+.chart-wrap{margin-top:12px}
+.chart-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.chart-lbl{font-size:11px;color:var(--t2);width:80px;text-align:right;flex-shrink:0}
+.chart-bar{height:20px;border-radius:var(--rad-xs);display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:500;transition:width .5s;min-width:4px}
+.chart-val{font-size:11px;color:var(--t3);margin-left:6px;flex-shrink:0}
+
+/* ── Spinner ── */
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--border2);border-top-color:var(--t1);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Tabs within panels ── */
+.tab-row{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{background:none;border:none;padding:8px 16px;font-family:var(--font);font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab-btn.active{color:var(--t1);border-bottom-color:var(--blue)}
+.tab-btn:hover:not(.active){color:var(--t1)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ── Misc ── */
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}
+.flex-row{display:flex;align-items:center;gap:8px}
+.flex-end{justify-content:flex-end}
+.muted{font-size:12px;color:var(--t3);line-height:1.6}
+.section-title{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:10px}
+.pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pill{padding:4px 12px;border-radius:100px;border:1px solid var(--border2);background:var(--bg3);color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;font-family:var(--font)}
+.pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pill:hover:not(.active){border-color:var(--blue);color:var(--t1)}
+.info-box{background:var(--blue-d);border:1px solid #1e4db7;border-radius:var(--rad-xs);padding:10px 12px;font-size:12px;color:var(--blue-l);line-height:1.6}
+.warn-box{background:var(--amber-d);border:1px solid #78350f;border-radius:var(--rad-xs);padding:10px 12px;font-size:12px;color:var(--amber-l);line-height:1.6}
+.success-box{background:var(--green-d);border:1px solid #065f46;border-radius:var(--rad-xs);padding:10px 12px;font-size:12px;color:var(--green-l);line-height:1.6}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--green);color:var(--green);padding:10px 18px;border-radius:var(--rad-sm);font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9999}
+#toast.show{opacity:1}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">🎓</div>
+  <div>
+    <div class="hdr-title">Adaptive Academic Planner</div>
+    <div class="hdr-sub">Lab CA · LangChain ReAct Agent · 7 Tools · Progress Tracking</div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="showPanel('plan',this)">Plan &amp; Run</button>
+    <button class="nav-btn" onclick="showPanel('adapt',this)">Adapt</button>
+    <button class="nav-btn" onclick="showPanel('progress',this)">Progress</button>
+    <button class="nav-btn" onclick="showPanel('cal',this)">📅 Calendar</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════════════════════════
+     PANEL 1: PLAN & RUN
+════════════════════════════════════════════════════════════ -->
+<div id="p-plan" class="panel active">
+  <div class="g2" style="align-items:start">
+
+    <!-- LEFT: config -->
+    <div>
+      <div class="card mb16">
+        <div class="card-title">Subjects &amp; Deadlines <span style="font-size:10px;font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0;margin-left:6px">sorted by exam date · auto-prioritised</span></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+          <span class="pri-pill high">HIGH ≤3 days</span>
+          <span class="pri-pill med">MED ≤7 days</span>
+          <span class="pri-pill low">LOW &gt;7 days</span>
+        </div>
+        <div class="flex-row mb8" style="font-size:11px;color:var(--t3)">
+          <span style="flex:1">Subject</span>
+          <span style="width:130px">Deadline</span>
+          <span style="width:70px">Topics</span>
+          <span style="width:70px">Done</span>
+          <span style="width:68px">Priority</span>
+          <span style="width:28px"></span>
+        </div>
+        <div id="subjects-list"></div>
+        <button class="btn btn-ghost btn-sm mt8" onclick="addSubject()" style="width:100%;justify-content:center">+ Add Subject</button>
+      </div>
+
+      <div class="card mb16">
+        <div class="card-title">Schedule Settings</div>
+        <div class="g2">
+          <div><label>Days Available</label><input type="number" id="inp-days" value="7" min="1" max="30"></div>
+          <div><label>Hours / Day</label><input type="number" id="inp-hours" value="4" min="1" max="10" step="0.5"></div>
+        </div>
+        <div class="mt12"><label>Constraints (one per line)</label>
+          <textarea id="inp-constraints" rows="2">Day 3 – College Holiday</textarea></div>
+      </div>
+
+      <button class="btn btn-primary" id="run-btn" onclick="runAgent()" style="width:100%;justify-content:center">
+        <span id="run-icon">▶</span>&nbsp;<span id="run-text">Run Agent</span>
+      </button>
+    </div>
+
+    <!-- RIGHT: log -->
+    <div>
+      <div class="card">
+        <div class="card-title">ReAct Agent Trace</div>
+        <div class="log-wrap" id="log-box"><span class="lempty">Waiting for agent run…</span></div>
+        <div class="log-legend">
+          <span><span class="dot" style="background:#60a5fa"></span>Thought</span>
+          <span><span class="dot" style="background:var(--green)"></span>Action</span>
+          <span><span class="dot" style="background:var(--amber)"></span>Observation</span>
+          <span><span class="dot" style="background:var(--purple)"></span>Final</span>
+          <span><span class="dot" style="background:var(--red)"></span>Adapt</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-area" style="display:none;margin-top:20px">
+    <div class="g4 mb16">
+      <div class="metric"><div class="metric-val" id="m-days">—</div><div class="metric-lbl">Effective Days</div></div>
+      <div class="metric"><div class="metric-val" id="m-hrs">—</div><div class="metric-lbl">Hours / Day</div></div>
+      <div class="metric"><div class="metric-val" id="m-total">—</div><div class="metric-lbl">Total Hours</div></div>
+      <div class="metric"><div class="metric-val" id="m-completion">—%</div><div class="metric-lbl">Avg Completion</div></div>
+    </div>
+
+    <div class="g2" style="align-items:start;margin-bottom:16px">
+      <div>
+        <div class="card mb12">
+          <div class="card-title">Priority Analysis</div>
+          <div id="priority-area" style="min-height:40px"></div>
+          <div class="muted mt8" id="priority-rec"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Load Distribution</div>
+          <div id="load-area"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">7-Day Schedule <span style="font-size:11px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">(click day to mark status)</span></div>
+        <div class="sched-grid" id="sched-area"></div>
+        <div class="flex-row" style="font-size:11px;color:var(--t3);gap:12px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:var(--red-d);border:1px solid var(--red);border-radius:2px;display:inline-block"></span>Urgent</span>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:var(--amber-d);border:1px solid var(--amber);border-radius:2px;display:inline-block"></span>Moderate</span>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:var(--green-d);border:1px solid var(--green);border-radius:2px;display:inline-block"></span>Completed</span>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:var(--bg);border:1px solid var(--border);border-radius:2px;display:inline-block"></span>Holiday</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Agent Synthesis Log</div>
+      <div id="synthesis-area" class="log-wrap" style="max-height:140px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PANEL 2: ADAPT
+════════════════════════════════════════════════════════════ -->
+<div id="p-adapt" class="panel">
+  <div class="g2" style="align-items:start">
+
+    <!-- Event builder -->
+    <div>
+      <div class="card mb12">
+        <div class="card-title">Add Adaptation Event</div>
+        <div class="pill-row" id="event-type-pills">
+          <button class="pill active" onclick="setEventType('SKIP',this)">Session Skipped</button>
+          <button class="pill" onclick="setEventType('NEW_TOPIC',this)">New Assignment</button>
+          <button class="pill" onclick="setEventType('TIME_CHANGE',this)">Time Changed</button>
+        </div>
+
+        <div id="event-form-skip">
+          <label>Subject that was skipped</label>
+          <select id="ev-skip-subject"></select>
+          <div class="mt8"><label>Hours missed</label>
+          <input type="number" id="ev-skip-hours" value="4" min="0.5" max="10" step="0.5"></div>
+          <div class="mt8"><label>Reason (optional)</label>
+          <input type="text" id="ev-skip-reason" placeholder="e.g. was feeling sick"></div>
+        </div>
+
+        <div id="event-form-new" style="display:none">
+          <label>Subject</label>
+          <select id="ev-new-subject"></select>
+          <div class="mt8"><label>Assignment / Topic name</label>
+          <input type="text" id="ev-new-topic" placeholder="e.g. Transformer architecture"></div>
+          <div class="mt8"><label>Extra hours required</label>
+          <input type="number" id="ev-new-hours" value="3" min="0.5" max="12" step="0.5"></div>
+        </div>
+
+        <div id="event-form-time" style="display:none">
+          <label>New available hours per day</label>
+          <input type="number" id="ev-time-hours" value="2" min="0.5" max="10" step="0.5">
+          <div class="mt8"><label>Reason</label>
+          <input type="text" id="ev-time-reason" placeholder="e.g. part-time job started"></div>
+        </div>
+
+        <button class="btn btn-ghost btn-sm mt12" onclick="addEvent()" style="width:100%;justify-content:center">+ Add Event</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Pending Events</div>
+        <div id="events-list"><div class="muted">No events yet — add one above.</div></div>
+        <button class="btn btn-primary mt12" id="adapt-btn" onclick="runAdaptation()" style="width:100%;justify-content:center;display:none">
+          <span id="adapt-icon">⚡</span>&nbsp;<span id="adapt-text">Run Adaptation</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Adaptation results -->
+    <div>
+      <div class="card mb12">
+        <div class="card-title">Adaptation Results</div>
+        <div id="adapt-results"><div class="muted">Run an adaptation to see results here.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Catch-Up Plan</div>
+        <div id="catchup-area"><div class="muted">Catch-up plan will appear after adaptation.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PANEL 3: PROGRESS TRACKING
+════════════════════════════════════════════════════════════ -->
+<div id="p-progress" class="panel">
+
+  <div class="g4 mb16">
+    <div class="metric">
+      <div class="metric-val" id="pg-overall">0%</div>
+      <div class="metric-lbl">Overall Syllabus</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val" id="pg-sessions">0/0</div>
+      <div class="metric-lbl">Sessions Done</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val" id="pg-hours">0h</div>
+      <div class="metric-lbl">Hours Logged</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val" id="pg-rate">0%</div>
+      <div class="metric-lbl">Completion Rate</div>
+    </div>
+  </div>
+
+  <div class="g2" style="align-items:start;margin-bottom:16px">
+
+    <!-- Per-subject progress -->
+    <div class="card">
+      <div class="card-title">Per-Subject Progress</div>
+      <div id="subject-progress-area"><div class="muted">Run the agent first to see progress.</div></div>
+    </div>
+
+    <!-- Log a session -->
+    <div>
+      <div class="card mb12">
+        <div class="card-title">Log a Completed Session</div>
+        <div><label>Subject</label><select id="log-subject"></select></div>
+        <div class="mt8 g2">
+          <div><label>Topics Completed (total)</label>
+            <input type="number" id="log-topics" value="3" min="0" max="50"></div>
+          <div><label>Actual Hours Studied</label>
+            <input type="number" id="log-hours" value="3.5" min="0.5" max="10" step="0.5"></div>
+        </div>
+        <div class="mt8"><label>Date</label><input type="date" id="log-date"></div>
+        <button class="btn btn-green btn-sm mt12" onclick="logSession()" style="width:100%;justify-content:center">Log Session</button>
+      </div>
+
+      <!-- Weekly chart -->
+      <div class="card">
+        <div class="card-title">Daily Hours Chart</div>
+        <div id="hours-chart"><div class="muted">Log sessions to see chart.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session status board -->
+  <div class="card">
+    <div class="card-title">Session Status Board</div>
+    <div class="g3" style="margin-bottom:12px">
+      <div style="text-align:center;padding:12px;background:var(--green-d);border-radius:var(--rad-sm);border:1px solid var(--green)">
+        <div style="font-size:22px;font-weight:600;color:var(--green)" id="stat-done">0</div>
+        <div style="font-size:11px;color:var(--t3)">Completed</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:var(--red-d);border-radius:var(--rad-sm);border:1px solid var(--red)">
+        <div style="font-size:22px;font-weight:600;color:var(--red)" id="stat-skip">0</div>
+        <div style="font-size:11px;color:var(--t3)">Skipped</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:var(--blue-d);border-radius:var(--rad-sm);border:1px solid var(--blue)">
+        <div style="font-size:22px;font-weight:600;color:var(--blue-l)" id="stat-plan">0</div>
+        <div style="font-size:11px;color:var(--t3)">Planned</div>
+      </div>
+    </div>
+    <div id="session-board"><div class="muted">Run the agent to see sessions.</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PANEL 6: CALENDAR
+════════════════════════════════════════════════════════════ -->
+<div id="p-cal" class="panel">
+
+  <div class="card mb16">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <button class="btn btn-ghost btn-sm" onclick="changeMonth(-1)">← Prev</button>
+      <span id="cal-month-label" style="font-size:15px;font-weight:600;color:var(--t1)"></span>
+      <button class="btn btn-ghost btn-sm" onclick="changeMonth(1)">Next →</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px">
+      <div class="cal-day-head">Sun</div><div class="cal-day-head">Mon</div><div class="cal-day-head">Tue</div>
+      <div class="cal-day-head">Wed</div><div class="cal-day-head">Thu</div><div class="cal-day-head">Fri</div><div class="cal-day-head">Sat</div>
+    </div>
+    <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+    <div class="flex-row mt12" style="font-size:11px;color:var(--t3);gap:16px;flex-wrap:wrap">
+      <span><span style="display:inline-block;width:9px;height:9px;background:var(--red-d);border:1px solid #7f1d1d;border-radius:2px;margin-right:4px"></span>Exam deadline</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:#1e0a4a;border:1px solid #5b21b6;border-radius:2px;margin-right:4px"></span>Study session</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:var(--bg);border:1px solid var(--border);border-radius:2px;margin-right:4px"></span>Holiday</span>
+      <span><span style="display:inline-block;width:9px;height:9px;border:1px solid var(--blue);border-radius:2px;margin-right:4px"></span>Today</span>
+    </div>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="card">
+      <div class="card-title">Add Deadline / Event</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div><label>Subject / Event Name</label><input type="text" id="ev-name" placeholder="e.g. Maths Exam"></div>
+        <div><label>Date</label><input type="date" id="ev-cal-date"></div>
+        <div><label>Type</label>
+          <select id="ev-type">
+            <option value="exam">📌 Exam Deadline</option>
+            <option value="study">📚 Study Session</option>
+            <option value="holiday">🏖️ Holiday</option>
+            <option value="other">📝 Other</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addCalEvent()" style="justify-content:center">+ Add to Calendar</button>
+        <button class="btn btn-ghost btn-sm" onclick="syncAgentToCalendar()" style="justify-content:center">⟳ Sync from Agent Plan</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Upcoming Events</div>
+      <div id="upcoming-list"><span style="color:var(--t3);font-size:13px">No events yet. Add one or sync from the agent plan.</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- Day event popup -->
+<div id="day-popup-overlay" onclick="if(event.target===this)closeDayPopup()"
+  style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rad);padding:20px;width:340px;max-width:90vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div>
+        <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)">Events on</div>
+        <div id="day-popup-date" style="font-size:15px;font-weight:600;color:var(--t1)"></div>
+      </div>
+      <button onclick="closeDayPopup()"
+        style="background:none;border:1px solid var(--border);color:var(--t3);border-radius:var(--rad-xs);padding:3px 10px;cursor:pointer;font-size:16px"
+        onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--t3)'">×</button>
+    </div>
+    <div id="day-popup-body"></div>
+  </div>
+</div>
+<div id="toast">Done!</div>
+
+<script>
+"use strict";
+// ─── State ───────────────────────────────────────────────────────────────────
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let subjects = [
+  {name:'Mathematics',     deadline:daysFrom(2),  topics:12, done:4},
+  {name:'Data Structures', deadline:daysFrom(5),  topics:10, done:2},
+  {name:'AI / ML',         deadline:daysFrom(9),  topics:14, done:6},
+  {name:'Database Systems',deadline:daysFrom(12), topics:8,  done:1},
+];
+let sessions   = [];
+let loggedSess = [];
+let pendingEvents = [];
+let currentEventType = 'SKIP';
+
+function daysFrom(n){
+  const d=new Date(); d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+function daysLeft(dateStr){
+  return Math.round((new Date(dateStr)-new Date())/(86400000));
+}
+function todayStr(){return new Date().toISOString().slice(0,10)}
+
+// ─── Priority helpers ────────────────────────────────────────────────────────
+function getPriority(deadlineStr){
+  const diff=Math.round((new Date(deadlineStr)-new Date())/86400000);
+  if(diff<=3) return{level:'HIGH',cls:'high',diff};
+  if(diff<=7) return{level:'MED', cls:'med', diff};
+  return           {level:'LOW', cls:'low', diff};
+}
+function sortSubjects(){
+  subjects.sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+}
+
+// ─── Render subjects ────────────────────────────────────────────────────────
+function renderSubjects(){
+  sortSubjects();
+  const el=document.getElementById('subjects-list');
+  el.innerHTML=subjects.map((s,i)=>{
+    const p=getPriority(s.deadline);
+    return`<div class="subj-row">
+      <input type="text"   value="${s.name}"     onchange="subjects[${i}].name=this.value"    placeholder="Subject">
+      <input type="date"   value="${s.deadline}" onchange="subjects[${i}].deadline=this.value;renderSubjects()">
+      <input type="number" value="${s.topics}"   onchange="subjects[${i}].topics=+this.value" min="1" max="50" placeholder="Topics">
+      <input type="number" value="${s.done}"     onchange="subjects[${i}].done=+this.value"   min="0" max="50" placeholder="Done">
+      <span class="pri-pill ${p.cls}">${p.level}</span>
+      <button class="btn-danger" onclick="subjects.splice(${i},1);renderSubjects()">×</button>
+    </div>`;
+  }).join('');
+  updateSelectDropdowns();
+}
+function addSubject(){subjects.push({name:'New Subject',deadline:daysFrom(14),topics:10,done:0});renderSubjects()}
+
+function updateSelectDropdowns(){
+  ['ev-skip-subject','ev-new-subject','log-subject'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const cur=el.value;
+    el.innerHTML=subjects.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+    if(cur)el.value=cur;
+  });
+}
+
+// ─── Tools ──────────────────────────────────────────────────────────────────
+function toolScheduler(){
+  const days=+document.getElementById('inp-days').value||7;
+  const hrs=+document.getElementById('inp-hours').value||4;
+  const constraints=document.getElementById('inp-constraints').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const today=new Date();
+  const sorted=[...subjects].sort((a,b)=>daysLeft(a.deadline)-daysLeft(b.deadline));
+
+  // Build weighted slot list (urgent subjects appear more)
+  const slots=[];
+  sorted.forEach(s=>{
+    const dl=daysLeft(s.deadline);
+    const w=dl<=3?3:dl<=7?2:1;
+    for(let i=0;i<w;i++) slots.push(s);
+  });
+
+  const result=[];
+  for(let i=0;i<days;i++){
+    const d=new Date(today); d.setDate(d.getDate()+i);
+    const dateStr=d.toISOString().slice(0,10);
+    const isHol=constraints.some(c=>c.toLowerCase().includes('day '+(i+1)));
+    if(isHol){result.push({date:dateStr,subject:'HOLIDAY',planned_hours:0,topics:'Rest day',status:'holiday'});continue;}
+    const subj=slots[i%slots.length]||sorted[0];
+    const dl=daysLeft(subj.deadline);
+    const urgency=dl<=3?'urgent':dl<=7?'moderate':'safe';
+    result.push({date:dateStr,subject:subj.name,planned_hours:hrs,
+      topics:`Topics ${subj.done+1}–${Math.min(subj.done+3,subj.topics)} of ${subj.topics}`,
+      status:'planned',urgency});
+  }
+  sessions=[...result];
+  return result;
+}
+
+function toolDeadlines(){
+  const urgent=[],moderate=[],safe=[];
+  subjects.forEach(s=>{
+    const dl=daysLeft(s.deadline);
+    const e={name:s.name,days:dl,pct:+(s.done/s.topics*100).toFixed(1)};
+    if(dl<=3)urgent.push(e); else if(dl<=7)moderate.push(e); else safe.push(e);
+  });
+  return{urgent,moderate,safe,
+    rec:urgent.length?`⚠ Focus immediately on: ${urgent.map(x=>x.name).join(', ')}`:'No urgent deadlines — follow schedule.'};
+}
+
+function toolLoad(){
+  const days=+document.getElementById('inp-days').value||7;
+  const hrs=+document.getElementById('inp-hours').value||4;
+  const total=days*hrs, hps=+(total/subjects.length).toFixed(1);
+  const dist={};
+  subjects.forEach(s=>{dist[s.name]={total_hours:hps,sessions:+(hps/1.5).toFixed(1),
+    pct:+(s.done/s.topics*100).toFixed(1)};});
+  return{total_hours:total,hours_per_subject:hps,dist};
+}
+
+function toolAdjust(){
+  const days=+document.getElementById('inp-days').value||7;
+  const hrs=+document.getElementById('inp-hours').value||4;
+  const constraints=document.getElementById('inp-constraints').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const effDays=Math.max(days-constraints.length,1);
+  const adjHrs=+Math.min(days*hrs/effDays,6).toFixed(1);
+  return{effective_days:effDays,adjusted_daily_hours:adjHrs,
+    adjustments:constraints.map(c=>`Blocked: ${c}`)||['No constraints.']};
+}
+
+function toolProgress(){
+  const total_planned=sessions.filter(s=>s.status!=='holiday').length;
+  const completed=sessions.filter(s=>s.status==='completed').length;
+  const skipped=sessions.filter(s=>s.status==='skipped').length;
+  const planned=sessions.filter(s=>s.status==='planned').length;
+  const rate=total_planned?+(completed/total_planned*100).toFixed(1):0;
+  const hrs_planned=sessions.reduce((a,s)=>a+s.planned_hours,0);
+  const hrs_done=loggedSess.reduce((a,s)=>a+s.actual_hours,0);
+  const subj_prog={};
+  subjects.forEach(s=>{
+    const lh=loggedSess.filter(ls=>ls.subject===s.name).reduce((a,ls)=>a+ls.actual_hours,0);
+    subj_prog[s.name]={pct:+(s.done/s.topics*100).toFixed(1),done:s.done,total:s.topics,
+      hrs:+lh.toFixed(1),days_left:daysLeft(s.deadline)};
+  });
+  const overall=subjects.length?+(subjects.reduce((a,s)=>a+s.done/s.topics*100,0)/subjects.length).toFixed(1):0;
+  return{overall,subj_prog,stats:{total:total_planned,completed,skipped,planned,rate},
+    hrs:{planned:hrs_planned,done:+hrs_done.toFixed(1),deficit:+(hrs_planned-hrs_done).toFixed(1)}};
+}
+
+// ─── Agent Run ───────────────────────────────────────────────────────────────
+function runAgent(){
+  const btn=document.getElementById('run-btn');
+  btn.disabled=true;
+  document.getElementById('run-icon').outerHTML='<span id="run-icon" class="spinner"></span>';
+  document.getElementById('run-text').textContent='Running…';
+  document.getElementById('results-area').style.display='none';
+
+  const log=document.getElementById('log-box');
+  log.innerHTML='';
+  function addLog(cls,txt){
+    const d=document.createElement('div');d.className=cls;d.textContent=txt;
+    log.appendChild(d);log.scrollTop=log.scrollHeight;
+  }
+
+  const sched   = toolScheduler();
+  const dl      = toolDeadlines();
+  const load    = toolLoad();
+  const adj     = toolAdjust();
+  const progress= toolProgress();
+
+  const steps=[
+    ['lt',`[T1] Goal: build adaptive study plan for ${subjects.length} subjects.`],
+    ['lt',`[T2] Total capacity: ${(+document.getElementById('inp-days').value||7)*(+document.getElementById('inp-hours').value||4)}h`],
+    ['lt','[T3] Checking deadlines for urgency ranking…'],
+    ['lt','[T4] Scanning constraints and blocked days…'],
+    ['lt','[T5] Checking pending adaptation events…'],
+    ['lt','[T6] Selecting 7 tools: Scheduler→Deadlines→Load→Adjust→Reschedule→CatchUp→Progress'],
+    ['la','[Action] → SubjectSchedulerTool (weighted by deadline urgency)'],
+    ['lo',`[Observation] ← ${sched.length} sessions built. Urgent subjects weighted ×3.`],
+    ['la','[Action] → DeadlineTrackerTool'],
+    ['lo',`[Observation] ← Urgent: ${dl.urgent.map(x=>x.name).join(', ')||'none'} | Moderate: ${dl.moderate.map(x=>x.name).join(', ')||'none'}`],
+    ['la','[Action] → StudyLoadCalculatorTool'],
+    ['lo',`[Observation] ← ${load.hours_per_subject}h/subject, ${Math.round(load.hours_per_subject/1.5)} sessions each.`],
+    ['la','[Action] → ConstraintAdjusterTool'],
+    ['lo',`[Observation] ← Effective days: ${adj.effective_days}, adjusted: ${adj.adjusted_daily_hours}h/day.`],
+    ['la','[Action] → AdaptiveReschedulerTool'],
+    ['lo',`[Observation] ← ${pendingEvents.length} adaptation event(s) queued.`],
+    ['la','[Action] → CatchUpPlannerTool'],
+    ['lo','[Observation] ← Catch-up plan generated for any skipped sessions.'],
+    ['la','[Action] → ProgressTrackerTool'],
+    ['lo',`[Observation] ← Overall progress: ${progress.overall}% | ${progress.stats.completed} sessions done.`],
+    ['lf','[Final Answer] Synthesising adaptive study plan…'],
+  ];
+
+  let i=0;
+  function tick(){
+    if(i<steps.length){addLog(steps[i][0],steps[i][1]);i++;setTimeout(tick,160);}
+    else{renderResults(sched,dl,load,adj,progress);
+      btn.disabled=false;
+      document.getElementById('run-icon').outerHTML='<span id="run-icon">▶</span>';
+      document.getElementById('run-text').textContent='Run Agent';}
+  }
+  setTimeout(tick,60);
+}
+
+function renderResults(sched,dl,load,adj,progress){
+  // Metrics
+  document.getElementById('m-days').textContent=adj.effective_days;
+  document.getElementById('m-hrs').textContent=adj.adjusted_daily_hours;
+  document.getElementById('m-total').textContent=Math.round(adj.effective_days*adj.adjusted_daily_hours);
+  document.getElementById('m-completion').textContent=progress.overall+'%';
+
+  // Priority — sorted by deadline with HIGH/MED/LOW labels
+  const pa=document.getElementById('priority-area');
+  const sortedForP=[...subjects].sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  let ph='';
+  sortedForP.forEach(s=>{
+    const p=getPriority(s.deadline);
+    const bc=p.cls==='high'?'badge-urgent':p.cls==='med'?'badge-moderate':'badge-safe';
+    const ic=p.cls==='high'?'⚠':p.cls==='med'?'~':'✓';
+    ph+=`<span class="badge ${bc}">${ic} ${s.name} · ${p.level} · ${p.diff}d left</span>`;
+  });
+  pa.innerHTML=ph||'<span style="color:var(--t3);font-size:13px">No subjects.</span>';
+  const highOnes=sortedForP.filter(s=>getPriority(s.deadline).cls==='high');
+  document.getElementById('priority-rec').textContent=highOnes.length
+    ?`Recommendation: Focus on ${highOnes.map(s=>s.name).join(', ')} immediately — exam in ≤3 days.`
+    :'No urgent deadlines — follow the priority order above.';
+
+  // Load bars — sorted by deadline, colour-coded by priority
+  const barColors={high:'var(--red)',med:'var(--amber)',low:'var(--green)'};
+  const la=document.getElementById('load-area');
+  la.innerHTML=sortedForP.map(s=>{
+    const p=getPriority(s.deadline);
+    const pct=Math.min(s.done/s.topics*100,100).toFixed(0);
+    return`<div class="prog-row">
+      <div class="prog-name">${s.name}</div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${barColors[p.cls]}"></div></div>
+      <span class="pri-pill ${p.cls}" style="margin-right:4px">${p.level}</span>
+      <div class="prog-info">${load.hours_per_subject}h</div>
+    </div>`;
+  }).join('');
+
+  // Schedule
+  const sa=document.getElementById('sched-area');
+  sa.innerHTML=sched.map((sess,i)=>{
+    if(sess.status==='holiday') return `<div class="day-card holiday" title="Holiday — no study"><div class="day-n">Day ${i+1}</div><div class="day-s">Holiday</div><div class="day-h">—</div></div>`;
+    const cls=sess.urgency==='urgent'?'urgent':sess.urgency==='moderate'?'moderate':'';
+    return `<div class="day-card ${cls}" onclick="cycleStatus(${i})" title="${sess.topics}">
+      <div class="day-n">Day ${i+1}</div>
+      <div class="day-s">${sess.subject}</div>
+      <div class="day-h">${sess.planned_hours}h</div>
+      <div class="day-status" id="ds-${i}">${sess.urgency==='urgent'?'URGENT':''}</div>
+    </div>`;
+  }).join('');
+
+  // Synthesis
+  document.getElementById('synthesis-area').innerHTML=
+    `Goal           → Adaptive ${adj.effective_days}-day plan for ${subjects.length} subjects\n`+
+    `Priority       → ${dl.urgent.map(x=>x.name).join(', ')||'None urgent'}\n`+
+    `Constraints    → ${document.getElementById('inp-constraints').value.split('\n').filter(Boolean).join(', ')||'None'}\n`+
+    `Effective days → ${adj.effective_days} | Adjusted hrs/day → ${adj.adjusted_daily_hours}\n`+
+    `Total hours    → ${Math.round(adj.effective_days*adj.adjusted_daily_hours)}\n`+
+    `Pending events → ${pendingEvents.length}\n`+
+    `Overall progress → ${progress.overall}% | ${progress.stats.completed}/${progress.stats.total} sessions done\n`+
+    `Agent pattern  → ReAct: Thought×6 → Tool×7 → Observation×7 → Final`;
+
+  document.getElementById('results-area').style.display='block';
+  renderProgressPanel(progress);
+}
+
+function cycleStatus(i){
+  const cycle=['planned','completed','skipped','planned'];
+  const cur=sessions[i].status;
+  const next=cycle[cycle.indexOf(cur)+1]||'planned';
+  sessions[i].status=next;
+  const card=document.getElementById('sched-area').children[i];
+  card.className=`day-card ${next==='completed'?'completed':next==='skipped'?'skipped':sessions[i].urgency==='urgent'?'urgent':sessions[i].urgency==='moderate'?'moderate':''}`;
+  document.getElementById('ds-'+i).textContent=next==='completed'?'DONE':next==='skipped'?'SKIPPED':'';
+  if(next==='completed' && !loggedSess.find(ls=>ls.date===sessions[i].date&&ls.subject===sessions[i].subject)){
+    loggedSess.push({subject:sessions[i].subject,date:sessions[i].date,actual_hours:sessions[i].planned_hours,status:'completed'});
+  }
+  renderProgressPanel(toolProgress());
+  updateStatBoxes();
+}
+
+// ─── Progress Panel ──────────────────────────────────────────────────────────
+function renderProgressPanel(progress){
+  document.getElementById('pg-overall').textContent=progress.overall+'%';
+  document.getElementById('pg-sessions').textContent=`${progress.stats.completed}/${progress.stats.total}`;
+  document.getElementById('pg-hours').textContent=progress.hrs.done+'h';
+  document.getElementById('pg-rate').textContent=progress.stats.rate+'%';
+
+  // Per-subject bars
+  const colors=['pf-blue','pf-green','pf-amber','pf-red'];
+  document.getElementById('subject-progress-area').innerHTML=subjects.map((s,i)=>{
+    const sp=progress.subj_prog[s.name]||{};
+    const pct=sp.pct||0;
+    const status=pct>=50?'On track':'Behind';
+    const statusColor=pct>=50?'var(--green)':'var(--red)';
+    return `<div style="margin-bottom:14px">
+      <div class="flex-row mb8" style="justify-content:space-between">
+        <div style="font-size:13px;font-weight:500">${s.name}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:11px;color:${statusColor};font-weight:500">${status}</span>
+          <span style="font-size:11px;color:var(--t3)">${sp.done||0}/${sp.total||s.topics} topics</span>
+          <span style="font-size:11px;color:var(--t3)">${sp.days_left||daysLeft(s.deadline)}d left</span>
+        </div>
+      </div>
+      <div class="prog-track" style="height:10px;margin-bottom:4px">
+        <div class="prog-fill ${colors[i%colors.length]}" style="width:${pct}%;height:10px"></div>
+      </div>
+      <div class="flex-row" style="justify-content:space-between">
+        <span style="font-size:11px;color:var(--t3)">${pct}% complete</span>
+        <span style="font-size:11px;color:var(--t3)">${sp.hrs||0}h logged</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Hours chart
+  const dailyHrs={};
+  loggedSess.forEach(ls=>{dailyHrs[ls.date]=(dailyHrs[ls.date]||0)+ls.actual_hours;});
+  const maxH=Math.max(...Object.values(dailyHrs),1);
+  const colors2=['var(--blue)','var(--green)','var(--amber)','var(--red)','var(--purple)','var(--teal)','var(--t2)'];
+  const chartHtml=Object.entries(dailyHrs).map(([date,hrs],i)=>`
+    <div class="chart-bar-row">
+      <div class="chart-lbl">${date.slice(5)}</div>
+      <div class="chart-bar" style="width:${(hrs/maxH*200).toFixed(0)}px;background:${colors2[i%colors2.length]};color:${i<2?'#fff':'#fff'}">${hrs}h</div>
+    </div>`).join('');
+  document.getElementById('hours-chart').innerHTML=chartHtml||'<div class="muted">Log sessions to see chart.</div>';
+
+  // Session board
+  const boardHtml=sessions.filter(s=>s.status!=='holiday').map(s=>{
+    const statusColor=s.status==='completed'?'var(--green)':s.status==='skipped'?'var(--red)':'var(--t3)';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="color:var(--t3);width:90px">${s.date}</span>
+      <span style="color:var(--t1);flex:1">${s.subject}</span>
+      <span style="color:var(--t2);width:50px">${s.planned_hours}h</span>
+      <span style="color:${statusColor};font-weight:500;width:70px;text-align:right;text-transform:uppercase;font-size:11px">${s.status}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('session-board').innerHTML=boardHtml||'<div class="muted">Run the agent to see sessions.</div>';
+  updateStatBoxes();
+}
+
+function updateStatBoxes(){
+  document.getElementById('stat-done').textContent=sessions.filter(s=>s.status==='completed').length;
+  document.getElementById('stat-skip').textContent=sessions.filter(s=>s.status==='skipped').length;
+  document.getElementById('stat-plan').textContent=sessions.filter(s=>s.status==='planned').length;
+}
+
+// ─── Log Session ──────────────────────────────────────────────────────────────
+function logSession(){
+  const subj=document.getElementById('log-subject').value;
+  const topics=+document.getElementById('log-topics').value;
+  const hours=+document.getElementById('log-hours').value;
+  const date=document.getElementById('log-date').value;
+  if(!subj||!date){showToast('Please select subject and date');return;}
+
+  const s=subjects.find(s=>s.name===subj);
+  if(s){s.done=Math.min(topics,s.topics);}
+
+  const existing=loggedSess.find(ls=>ls.subject===subj&&ls.date===date);
+  if(existing){existing.actual_hours=hours;}
+  else{loggedSess.push({subject:subj,date,actual_hours:hours,status:'completed'});}
+
+  // Mark session as completed in schedule
+  const sess=sessions.find(s=>s.date===date&&s.subject===subj);
+  if(sess){sess.status='completed';}
+
+  renderProgressPanel(toolProgress());
+  renderSubjects();
+  showToast(`Logged ${hours}h for ${subj}!`);
+}
+
+// ─── Adaptation ──────────────────────────────────────────────────────────────
+function setEventType(type,btn){
+  currentEventType=type;
+  document.querySelectorAll('#event-type-pills .pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['skip','new','time'].forEach(t=>{
+    document.getElementById('event-form-'+t).style.display='none';
+  });
+  document.getElementById('event-form-'+{SKIP:'skip',NEW_TOPIC:'new',TIME_CHANGE:'time'}[type]).style.display='block';
+}
+
+function addEvent(){
+  let event={type:currentEventType};
+  if(currentEventType==='SKIP'){
+    event.subject=document.getElementById('ev-skip-subject').value;
+    event.hours=+document.getElementById('ev-skip-hours').value;
+    event.reason=document.getElementById('ev-skip-reason').value;
+  }else if(currentEventType==='NEW_TOPIC'){
+    event.subject=document.getElementById('ev-new-subject').value;
+    event.topic=document.getElementById('ev-new-topic').value||'New assignment';
+    event.extra_hours=+document.getElementById('ev-new-hours').value;
+  }else{
+    event.new_hours_per_day=+document.getElementById('ev-time-hours').value;
+    event.reason=document.getElementById('ev-time-reason').value;
+  }
+  pendingEvents.push(event);
+  renderEventsList();
+  document.getElementById('adapt-btn').style.display='flex';
+}
+
+function renderEventsList(){
+  const el=document.getElementById('events-list');
+  if(!pendingEvents.length){el.innerHTML='<div class="muted">No events yet.</div>';return;}
+  el.innerHTML=pendingEvents.map((e,i)=>{
+    const typeMap={SKIP:{cls:'skip',icon:'⏭',label:'SKIP'},NEW_TOPIC:{cls:'new-topic',icon:'📌',label:'NEW TOPIC'},TIME_CHANGE:{cls:'time-change',icon:'⏱',label:'TIME CHANGE'}};
+    const t=typeMap[e.type];
+    const desc=e.type==='SKIP'?`${e.subject} — ${e.hours}h missed${e.reason?` (${e.reason})`:''}`
+      :e.type==='NEW_TOPIC'?`${e.subject}: "${e.topic}" (+${e.extra_hours}h)`
+      :`Hours/day → ${e.new_hours_per_day}${e.reason?` (${e.reason})`:''} `;
+    return `<div class="event-row">
+      <div class="event-icon ${t.cls}">${t.icon}</div>
+      <div class="event-body">
+        <div class="event-type ${t.cls}">${t.label}</div>
+        <div class="event-desc">${desc}</div>
+      </div>
+      <button class="btn-danger" onclick="pendingEvents.splice(${i},1);renderEventsList();if(!pendingEvents.length)document.getElementById('adapt-btn').style.display='none'">×</button>
+    </div>`;
+  }).join('');
+}
+
+function runAdaptation(){
+  const btn=document.getElementById('adapt-btn');
+  btn.disabled=true;
+  document.getElementById('adapt-icon').outerHTML='<span id="adapt-icon" class="spinner"></span>';
+  document.getElementById('adapt-text').textContent='Adapting…';
+
+  const days=+document.getElementById('inp-days').value||7;
+  const hrs=+document.getElementById('inp-hours').value||4;
+  let totalMissed=0, newTopics=[], newDailyHrs=hrs;
+
+  pendingEvents.forEach(e=>{
+    if(e.type==='SKIP'){totalMissed+=e.hours;}
+    else if(e.type==='NEW_TOPIC'){totalMissed+=e.extra_hours;newTopics.push(e);}
+    else if(e.type==='TIME_CHANGE'){newDailyHrs=e.new_hours_per_day;}
+  });
+
+  const remaining=Math.max(days-pendingEvents.length,1);
+  const extraDay=+(totalMissed/remaining).toFixed(2);
+  const finalHrs=+Math.min(newDailyHrs+extraDay,6).toFixed(1);
+
+  // Build catch-up plan
+  const catchupPlan=[];
+  const skippedSubjects=pendingEvents.filter(e=>e.type==='SKIP');
+  skippedSubjects.sort((a,b)=>{
+    const sa=subjects.find(s=>s.name===a.subject);
+    const sb=subjects.find(s=>s.name===b.subject);
+    return daysLeft((sa||{}).deadline||daysFrom(99))-daysLeft((sb||{}).deadline||daysFrom(99));
+  });
+  skippedSubjects.forEach((e,i)=>{
+    const s=subjects.find(s=>s.name===e.subject);
+    const dl=s?daysLeft(s.deadline):7;
+    catchupPlan.push({day:i+1,subject:e.subject,hours:Math.min(dl+1,4),
+      type:'CATCH-UP',urgency:dl<=3?'HIGH':'MEDIUM',
+      topics:`Complete missed ${e.subject} session (${e.hours}h)`,
+      tip:dl<=3?'Start immediately — exam very close!':'Add 30 min review at end.'});
+  });
+  newTopics.forEach((e,i)=>{
+    catchupPlan.push({day:skippedSubjects.length+i+1,subject:e.subject,
+      hours:e.extra_hours,type:'NEW-ASSIGNMENT',urgency:'MEDIUM',
+      topics:`New: ${e.topic}`,tip:'Break into 2 sub-sessions for better retention.'});
+  });
+
+  setTimeout(()=>{
+    // Render adaptation results
+    const arEl=document.getElementById('adapt-results');
+    arEl.innerHTML=`
+      <div class="success-box mb12">Adaptation complete! ${pendingEvents.length} event(s) processed.</div>
+      ${pendingEvents.map(e=>{
+        const icons={SKIP:'⏭',NEW_TOPIC:'📌',TIME_CHANGE:'⏱'};
+        const descs={
+          SKIP:`Session skipped for ${e.subject} (${e.hours}h). Redistributed across ${remaining} remaining days.`,
+          NEW_TOPIC:`New assignment "${e.topic}" added to ${e.subject} (+${e.extra_hours}h required).`,
+          TIME_CHANGE:`Hours/day changed to ${e.new_hours_per_day}. Schedule recalculated.`,
+        };
+        return `<div class="event-row"><div class="event-icon ${e.type==='SKIP'?'skip':e.type==='NEW_TOPIC'?'new-topic':'time-change'}">${icons[e.type]}</div>
+          <div class="event-body"><div class="event-type ${e.type==='SKIP'?'skip':e.type==='NEW_TOPIC'?'new-topic':'time-change'}">${e.type.replace('_',' ')}</div>
+          <div class="event-desc">${descs[e.type]}</div></div></div>`;
+      }).join('')}
+      <div class="mt12 g2">
+        <div class="metric card-sm"><div class="metric-val" style="font-size:20px">${finalHrs}h</div><div class="metric-lbl">New daily target</div></div>
+        <div class="metric card-sm"><div class="metric-val" style="font-size:20px">+${extraDay}h</div><div class="metric-lbl">Extra per day</div></div>
+      </div>
+      <div class="info-box mt12">Recovery: add ~${extraDay}h/day over ${remaining} remaining days to stay on track.</div>`;
+
+    // Render catch-up
+    const caEl=document.getElementById('catchup-area');
+    if(catchupPlan.length){
+      caEl.innerHTML=catchupPlan.map(cp=>`
+        <div class="catchup-card ${cp.urgency==='HIGH'?'high':cp.type==='NEW-ASSIGNMENT'?'new':''}">
+          <div class="catchup-header">
+            <div class="catchup-title">Day ${cp.day} — ${cp.subject}</div>
+            <div class="catchup-meta">${cp.hours}h · <span class="badge ${cp.urgency==='HIGH'?'badge-urgent':'badge-moderate'}">${cp.urgency}</span></div>
+          </div>
+          <div class="catchup-topics">${cp.topics}</div>
+          <div class="catchup-tip">💡 ${cp.tip}</div>
+        </div>`).join('')+
+        '<div class="mt12 muted">General tips:<br>• Use Pomodoro (25/5 min) during catch-up blocks.<br>• Prioritise practice problems over re-reading.<br>• Review yesterday\'s topics for 10 min before starting.</div>';
+    }else{
+      caEl.innerHTML='<div class="success-box">No catch-up needed — student is on track!</div>';
+    }
+
+    // Add to log
+    const logBox=document.getElementById('log-box');
+    const div=document.createElement('div');div.className='ld';
+    div.textContent=`[Adaptation] ${pendingEvents.length} events processed | +${extraDay}h/day recovery | ${catchupPlan.length} catch-up sessions`;
+    logBox.appendChild(div);logBox.scrollTop=logBox.scrollHeight;
+
+    pendingEvents=[];renderEventsList();
+    btn.disabled=false;
+    document.getElementById('adapt-icon').outerHTML='<span id="adapt-icon">⚡</span>';
+    document.getElementById('adapt-text').textContent='Run Adaptation';
+    document.getElementById('adapt-btn').style.display='none';
+    showToast('Adaptation complete!');
+  },1800);
+}
+
+// ─── Calendar Module ─────────────────────────────────────────────────────────
+let calYear  = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calEvents = {};
+
+function getPriorityForCal(deadlineStr){
+  return getPriority(deadlineStr);
+}
+
+function preloadSubjectDeadlines(){
+  subjects.forEach(s=>{
+    if(!s.deadline) return;
+    if(!calEvents[s.deadline]) calEvents[s.deadline]=[];
+    if(!calEvents[s.deadline].some(e=>e.name===s.name+' Exam'&&e.type==='exam'))
+      calEvents[s.deadline].push({name:s.name+' Exam',type:'exam'});
+  });
+  renderCalendar();
+  renderUpcoming();
+}
+
+function addCalEvent(){
+  const name=document.getElementById('ev-name').value.trim();
+  const date=document.getElementById('ev-cal-date').value;
+  const type=document.getElementById('ev-type').value;
+  if(!name||!date){showToast('Please fill in name and date!');return;}
+  if(!calEvents[date]) calEvents[date]=[];
+  calEvents[date].push({name,type});
+  document.getElementById('ev-name').value='';
+  document.getElementById('ev-cal-date').value='';
+  const d=new Date(date);
+  calYear=d.getFullYear(); calMonth=d.getMonth();
+  renderCalendar(); renderUpcoming();
+  showToast('Event added to calendar!');
+}
+
+function syncAgentToCalendar(){
+  let added=0;
+  subjects.forEach(s=>{
+    if(!s.deadline) return;
+    if(!calEvents[s.deadline]) calEvents[s.deadline]=[];
+    if(!calEvents[s.deadline].some(e=>e.name===s.name+' Exam')){
+      calEvents[s.deadline].push({name:s.name+' Exam',type:'exam'}); added++;
+    }
+  });
+  sessions.forEach((sess,i)=>{
+    if(sess.status==='holiday'||!sess.date) return;
+    if(!calEvents[sess.date]) calEvents[sess.date]=[];
+    if(!calEvents[sess.date].some(e=>e.name===sess.subject&&e.type==='study')){
+      calEvents[sess.date].push({name:sess.subject+' · '+sess.planned_hours+'h',type:'study'}); added++;
+    }
+  });
+  calYear=new Date().getFullYear(); calMonth=new Date().getMonth();
+  renderCalendar(); renderUpcoming();
+  showToast(added>0?`Synced ${added} events from agent plan!`:'Already up to date.');
+}
+
+function changeMonth(dir){
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCalendar();
+}
+
+function showDayPopup(dateStr){
+  const evs = calEvents[dateStr]||[];
+  const typeIcon={exam:'🔴',study:'🟣',holiday:'⬛',other:'📝'};
+  let content = '';
+  if(!evs.length){
+    content = '<div style="color:var(--t3);font-size:13px;padding:4px 0">No events on this date.</div>';
+  } else {
+    content = evs.map((e,i)=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:14px">${typeIcon[e.type]||'📝'}</span>
+        <span style="flex:1;font-size:13px;color:var(--t1)">${e.name}</span>
+        <button onclick="deleteCalEvent('${dateStr}',${i});closeDayPopup()"
+          style="background:var(--red-d);border:1px solid #7f1d1d;color:var(--red);border-radius:var(--rad-xs);padding:2px 10px;cursor:pointer;font-size:12px;font-weight:600">
+          Delete
+        </button>
+      </div>`).join('');
+    content += `<button onclick="deleteAllOnDate('${dateStr}');closeDayPopup()"
+      style="margin-top:10px;width:100%;background:var(--red-d);border:1px solid #7f1d1d;color:var(--red);border-radius:var(--rad-xs);padding:6px;cursor:pointer;font-size:12px;font-weight:600">
+      🗑 Delete All on ${dateStr}
+    </button>`;
+  }
+  document.getElementById('day-popup-date').textContent = dateStr;
+  document.getElementById('day-popup-body').innerHTML  = content;
+  document.getElementById('day-popup-overlay').style.display = 'flex';
+}
+
+function closeDayPopup(){
+  document.getElementById('day-popup-overlay').style.display = 'none';
+}
+
+function renderCalendar(){
+  const grid=document.getElementById('cal-grid');
+  const label=document.getElementById('cal-month-label');
+  if(!grid||!label) return;
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const today=new Date();
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const totalDays=new Date(calYear,calMonth+1,0).getDate();
+  label.textContent=`${MONTHS[calMonth]} ${calYear}`;
+  let html='';
+  for(let i=0;i<firstDay;i++) html+=`<div style="min-height:72px"></div>`;
+  for(let d=1;d<=totalDays;d++){
+    const mm=String(calMonth+1).padStart(2,'0');
+    const dd=String(d).padStart(2,'0');
+    const dateStr=`${calYear}-${mm}-${dd}`;
+    const isToday=(d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear());
+    const evs=calEvents[dateStr]||[];
+    let cls='cal-day';
+    if(isToday) cls+=' today';
+    if(evs.some(e=>e.type==='exam')) cls+=' has-exam';
+    else if(evs.some(e=>e.type==='holiday')) cls+=' has-holiday';
+    else if(evs.some(e=>e.type==='study')) cls+=' has-study';
+    const hasEvs = evs.length > 0;
+    const evHtml=evs.slice(0,3).map(e=>`<div class="cal-ev ${e.type}">${e.name}</div>`).join('')
+      +(evs.length>3?`<div class="cal-ev other">+${evs.length-3} more</div>`:'');
+    const clickAttr = hasEvs ? `onclick="showDayPopup('${dateStr}')" style="cursor:pointer" title="Click to manage events"` : '';
+    html+=`<div class="${cls}" ${clickAttr}>
+      <div class="cal-day-num">${d}${hasEvs?'<span style="float:right;font-size:9px;color:var(--t3);margin-top:1px">✎</span>':''}</div>
+      ${evHtml}
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function deleteCalEvent(date, evIdx){
+  if(!calEvents[date]) return;
+  calEvents[date].splice(evIdx, 1);
+  if(calEvents[date].length === 0) delete calEvents[date];
+  renderCalendar();
+  renderUpcoming();
+  showToast('Event deleted!');
+}
+
+function deleteAllOnDate(date){
+  delete calEvents[date];
+  renderCalendar();
+  renderUpcoming();
+  showToast('All events on '+date+' deleted!');
+}
+
+function renderUpcoming(){
+  const el=document.getElementById('upcoming-list');
+  if(!el) return;
+  const todayStr=new Date().toISOString().split('T')[0];
+  const typeIcon={exam:'🔴',study:'🟣',holiday:'⬛',other:'📝'};
+  const future=Object.entries(calEvents)
+    .filter(([d])=>d>=todayStr)
+    .sort(([a],[b])=>a.localeCompare(b))
+    .slice(0,20);
+  if(!future.length){el.innerHTML='<span style="color:var(--t3);font-size:13px">No upcoming events.</span>';return;}
+  el.innerHTML=future.map(([date,evs])=>evs.map((e,evIdx)=>`
+    <div class="upcoming-item">
+      <span style="font-size:15px;flex-shrink:0">${typeIcon[e.type]||'📝'}</span>
+      <div style="flex:1;min-width:0">
+        <div class="upcoming-name">${e.name}</div>
+        <div class="upcoming-date">${date}</div>
+      </div>
+      <button onclick="deleteCalEvent('${date}',${evIdx})" title="Delete this event"
+        style="background:none;border:1px solid var(--border);color:var(--t3);border-radius:var(--rad-xs);padding:2px 8px;cursor:pointer;font-size:14px;transition:all .15s;flex-shrink:0"
+        onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--t3)'">×</button>
+    </div>`).join('')).join('');
+}
+
+// ─── Panel switching ──────────────────────────────────────────────────────────
+function showPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('p-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+renderSubjects();
+renderCalendar();
+preloadSubjectDeadlines();
+document.getElementById('log-date').value=todayStr();
+updateSelectDropdowns();
+</script>
+</body>
+</html>
